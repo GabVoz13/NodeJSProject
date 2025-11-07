@@ -44,6 +44,78 @@ pointLight.position.set(0, -10, 10);
 const ambientLight = new THREE.AmbientLight(0xffffff);
 ambientLight.position.set(25, -15, -400);
 
+// === Lucky (Origami) Star Factory ===
+function makeLuckyStar({
+                           outer = 5,        // tip radius
+                           inner = 2.6,      // inner radius (between tips)
+                           depth = 1.2,      // thickness of the star
+                           bevelSize = 0.8,  // how rounded the edges feel
+                           bevelThickness = 0.9,
+                           bevelSegments = 6,
+                           color = 0xffd1dc  // pastel pink default
+                       } = {}) {
+
+    // 1) Build a 2D 5-point star shape
+    const shape = new THREE.Shape();
+    const spikes = 5;
+    for (let i = 0; i < spikes * 2; i++) {
+        const r = (i % 2 === 0) ? outer : inner;
+        const a = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2; // start “up”
+        const x = Math.cos(a) * r;
+        const y = Math.sin(a) * r;
+        (i === 0) ? shape.moveTo(x, y) : shape.lineTo(x, y);
+    }
+    shape.closePath();
+
+    // 2) Extrude with bevels for the “puffy paper” edge
+    const geo = new THREE.ExtrudeGeometry(shape, {
+        depth,
+        bevelEnabled: true,
+        bevelSize,
+        bevelThickness,
+        bevelSegments,
+        curveSegments: 24
+    });
+
+    // 3) Paper-like material: pastel color + flat shading
+    const mat = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.9,
+        metalness: 0.0,
+        flatShading: true
+    });
+
+    const star = new THREE.Mesh(geo, mat);
+
+    // 4) Gentle center “puff”: nudge vertices along normal (subtle)
+    geo.computeVertexNormals();
+    const pos = geo.attributes.position;
+    const norm = geo.attributes.normal;
+    for (let i = 0; i < pos.count; i++) {
+        // push a tiny bit based on how close the vertex is to the center
+        const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+        const radial = Math.sqrt(x*x + y*y);
+        const push = 0.12 * Math.exp(-radial * 0.12); // softer in the middle
+        pos.setXYZ(
+            i,
+            x + norm.getX(i) * push,
+            y + norm.getY(i) * push,
+            z + norm.getZ(i) * push
+        );
+    }
+    pos.needsUpdate = true;
+    geo.computeVertexNormals();
+
+    // nice size to match your scene
+    star.scale.set(1.3, 1.3, 1.3);
+    return star;
+}
+
+const lucky = makeLuckyStar({ color: 0xffd1dc }); // pastel pink
+lucky.position.set(0, 20, 0);
+scene.add(lucky);
+
+
 scene.add(pointLight);
 scene.add(ambientLight);
 
@@ -93,6 +165,11 @@ function animate() {
     controls.update();
 
     renderer.render(scene, camera);
+
+    // paper star
+    lucky.rotation.y += 0.015;
+    lucky.scale.setScalar(1 + 0.04 * Math.sin(Date.now() * 0.006));
+
 
 }
 
