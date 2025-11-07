@@ -75,6 +75,8 @@ const torusKnot = new THREE.Mesh(torusGeo, torusMaterial);
 torusKnot.position.y = 20;
 scene.add(torusKnot);
 
+
+
 function animate() {
     requestAnimationFrame(animate);
 
