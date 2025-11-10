@@ -1,6 +1,6 @@
 import * as THREE from 'https://cdn.skypack.dev/three@0.128.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.skypack.dev/three@0.128.0/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.128.0/examples/jsm/loaders/GLTFLoader.js';
+importr } from 'https://cdn.skypack.dev/three@0.128.0/examples/jsm/loaders/GLTFLoader.js';
 
 const scene = new THREE.Scene();
 
@@ -43,6 +43,37 @@ pointLight.position.set(0, -10, 10);
 
 const ambientLight = new THREE.AmbientLight(0xffffff);
 ambientLight.position.set(25, -15, -400);
+
+scene.add(pointLight);
+scene.add(ambientLight);
+
+const lightHelper = new THREE.PointLightHelper(pointLight);
+scene.add(lightHelper);
+
+const gridHelper = new THREE.GridHelper(200, 50);
+scene.add(gridHelper);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+
+const spaceTexture = new THREE.TextureLoader().load('images/night_sky.jpg');
+scene.background = spaceTexture;
+
+const smileTexture = new THREE.TextureLoader().load('images/smile.jpg');
+const sphereGeometry = new THREE.SphereGeometry(10, 22, 10);
+const smileMaterial = new THREE.MeshBasicMaterial({ map: smileTexture });
+const smileMesh = new THREE.Mesh(sphereGeometry, smileMaterial);
+scene.add(smileMesh);
+
+const normalTexture = new THREE.TextureLoader().load('images/normals/textureNormal.png');
+const torusGeo = new THREE.TorusKnotGeometry(5, 1, 250, 5, 9, 15);
+const torusMaterial = new THREE.MeshStandardMaterial({
+    normalMap: normalTexture,
+    roughness: 0,
+    metalness: 0.8
+});
+const torusKnot = new THREE.Mesh(torusGeo, torusMaterial);
+torusKnot.position.y = 20;
+scene.add(torusKnot);
 
 // === Lucky (Origami) Star Factory ===
 function makeLuckyStar({
@@ -116,36 +147,6 @@ lucky.position.set(0, 20, 0);
 scene.add(lucky);
 
 
-scene.add(pointLight);
-scene.add(ambientLight);
-
-const lightHelper = new THREE.PointLightHelper(pointLight);
-scene.add(lightHelper);
-
-const gridHelper = new THREE.GridHelper(200, 50);
-scene.add(gridHelper);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-
-const spaceTexture = new THREE.TextureLoader().load('images/night_sky.jpg');
-scene.background = spaceTexture;
-
-const smileTexture = new THREE.TextureLoader().load('images/smile.jpg');
-const sphereGeometry = new THREE.SphereGeometry(10, 22, 10);
-const smileMaterial = new THREE.MeshBasicMaterial({ map: smileTexture });
-const smileMesh = new THREE.Mesh(sphereGeometry, smileMaterial);
-scene.add(smileMesh);
-
-const normalTexture = new THREE.TextureLoader().load('images/normals/textureNormal.png');
-const torusGeo = new THREE.TorusKnotGeometry(5, 1, 250, 5, 9, 15);
-const torusMaterial = new THREE.MeshStandardMaterial({
-    normalMap: normalTexture,
-    roughness: 0,
-    metalness: 0.8
-});
-const torusKnot = new THREE.Mesh(torusGeo, torusMaterial);
-torusKnot.position.y = 20;
-scene.add(torusKnot);
 
 function animate() {
     requestAnimationFrame(animate);
@@ -169,7 +170,6 @@ function animate() {
     // paper star
     lucky.rotation.y += 0.015;
     lucky.scale.setScalar(1 + 0.04 * Math.sin(Date.now() * 0.006));
-
 
 }
 
